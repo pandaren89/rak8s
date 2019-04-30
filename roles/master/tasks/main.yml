@@ -18,15 +18,20 @@
     mode: 0755
 
 - name: "Initialize first master {{ kubernetes_version }}"
-  shell: kubeadm init --ignore-preflight-errors=all --config=/tmp/rak8s/kubeadm-config.yml --experimental-upload-certs
+  shell: kubeadm init --ignore-preflight-errors=all --config=/tmp/rak8s/kubeadm-config.yml
   retries: 3
   register: kubeadm_init_first
   when: inventory_hostname == groups['master'][0] and kubeadm_reset is succeeded
 
+- name: Upload certificates
+  shell: kubeadm init phase --config=/tmp/rak8s/kubeadm-config.yml upload-certs --experimental-upload-certs
+  register: kubeadm_upload_cert
+  when: inventory_hostname == groups['master'][0] and kubeadm_init_first is succeeded
+
 - name: Set kubeadm certificate key
   set_fact:
-    kubeadm_certificate_key: "{{ item | regex_search('--certificate-key ([^ ]+)','\\1') | first }}"
-  with_items: "{{ (hostvars['{{ groups['master'][0] }}']['kubeadm_init_first']|default({'stdout_lines': []}))['stdout_lines'] }}"
+    kubeadm_certificate_key: "{{ hostvars[groups['master'][0]]['kubeadm_upload_cert'].stdout_lines[-1] | trim }}"
+  when: kubeadm_upload_cert is succeeded
 
 - name: Create Kubernetes config directory
   file:
@@ -55,12 +60,24 @@
 - set_fact:
     kubeadm_join: "{{ kubeadm_join_cmd.stdout }}"
 
+- name: Install Flannel (Networking)
+  shell: "curl -sSL https://rawgit.com/coreos/flannel/{{ flannel_version }}/Documentation/kube-flannel.yml | kubectl create -f -" 
+  when: inventory_hostname == groups['master'][0]
+
 - name: Join Kubernetes Cluster
   shell: "{{ kubeadm_join }} --certificate-key={{ kubeadm_certificate_key }} --ignore-preflight-errors=all --experimental-control-plane"
   when: inventory_hostname != groups['master'][0] and kubeadm_reset is succeeded
 
-- name: Install Flannel (Networking)
-  shell: "curl -sSL https://rawgit.com/coreos/flannel/{{ flannel_version }}/Documentation/kube-flannel.yml | kubectl create -f -" 
+- name: Copy admin.conf to config directory
+  copy:
+    src: /etc/kubernetes/admin.conf
+    dest: /root/.kube/config
+    owner: root
+    group: root
+    mode: 0755
+    remote_src: yes
+    backup: yes
+  when: inventory_hostname != groups['master'][0]
 
 - name: Poke kubelet
   systemd:
