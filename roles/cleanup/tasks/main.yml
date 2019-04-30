@@ -24,6 +24,18 @@
     - kubeadm
     - kubectl
     - docker-ce
+    
+- name: "Remove Kubernetes configs"
+  shell: rm -rf /etc/kubernetes && rm -rf /root/.kube
+
+- name: "Remove Docker configs"
+  shell: rm -rf /etc/docker && rm -rf /var/lib/docker
+
+- name: "Remove etcd"
+  shell: rm -rf /var/lib/etcd 
+
+- name: "Remove kubelet"
+  shell: rm -rf /var/lib/kubelet 
 
 - name: "Remove pod logging"
   shell: rm -rf /var/log/pods/* 

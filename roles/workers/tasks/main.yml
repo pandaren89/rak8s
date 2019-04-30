@@ -4,10 +4,17 @@
   shell: kubeadm reset -f
   register: kubeadm_reset
 
+- name: Generate join token
+  delegate_to: "{{ groups['master'][0] }}"
+  shell: kubeadm token create --print-join-command
+  register: kubeadm_join_cmd
+
+- set_fact:
+    kubeadm_join: "{{ kubeadm_join_cmd.stdout }}"
+
 - name: Join Kubernetes Cluster
-  shell: kubeadm join --ignore-preflight-errors=all --token {{ token }} {{ groups['master'][0] }}:6443 --discovery-token-unsafe-skip-ca-verification
+  shell: "{{ kubeadm_join }} --ignore-preflight-errors=all"
   when: kubeadm_reset is succeeded
-  register: kubeadm_join
 
 - name: Poke kubelet
   systemd:

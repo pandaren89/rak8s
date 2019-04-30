@@ -1,0 +1,11 @@
+# defualts
+127.0.0.1       localhost
+::1             localhost ip6-localhost ip6-loopback
+ff02::1         ip6-allnodes
+ff02::2         ip6-allrouters
+
+# {{ ansible_managed }}
+127.0.1.1       {{ ansible_hostname }}
+{% for host in play_hosts %}
+{{ hostvars[host].ansible_default_ipv4.address }} {{host}}
+{% endfor %}

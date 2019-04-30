@@ -1,0 +1,12 @@
+apiVersion: kubeadm.k8s.io/v1beta1
+kind: ClusterConfiguration
+kubernetesVersion: {{ kubernetes_version }}
+controlPlaneEndpoint: {{ control_plane_endpoint }}
+networking:
+  podSubnet: {{ pod_network_cidr }}
+apiServer:
+  certSANs:
+{% for host in groups['master'] %}
+  - {{ hostvars[host]['ansible_host'] }}
+{% endfor %}
+  - localhost

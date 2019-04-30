@@ -6,18 +6,20 @@
   register: hostname
   tags: hostname
 
-- name: Ensure hostname is in /etc/hosts
-  lineinfile:
+- name: Ensure hostnames is in /etc/hosts
+  template:
+    src: hosts.j2
     dest: /etc/hosts
-    regexp: "^{{ ansible_default_ipv4.address }}.+$"
-    line: "{{ ansible_default_ipv4.address }} {{ ansible_fqdn }} {{ ansible_hostname }}"
+    owner: root
+    group: root
+    mode: 0644
   register: hostname
   tags: hostname
 
-- name: set timezone to UTC
-  timezone:
-    name: UTC
-  register: timezone
+# - name: set timezone to UTC
+#   timezone:
+#     name: UTC
+#   register: timezone
 
 # - name: gpu mem check
 #   shell: cat /boot/config.txt | grep gpu_mem
@@ -58,18 +60,18 @@
   args:
     warn: no
 
-- name: Reboot
-  shell: sleep 2 && shutdown -r now "Ansible Reboot"
-  async: 1
-  poll: 0
-  ignore_errors: True
-  when: cmdline or timezone or hostname is changed
+# - name: Reboot
+#   shell: sleep 2 && shutdown -r now "Ansible Reboot"
+#   async: 1
+#   poll: 0
+#   ignore_errors: True
+#   when: cmdline or timezone or hostname is changed
 
-- name: Wait for Reboot
-  local_action: wait_for
-  args:
-    host: "{{ inventory_hostname }}"
-    port: 22
-    delay: 15
-    timeout: 120
-  become: False
+# - name: Wait for Reboot
+#   local_action: wait_for
+#   args:
+#     host: "{{ inventory_hostname }}"
+#     port: 22
+#     delay: 15
+#     timeout: 120
+#   become: False

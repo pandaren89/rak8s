@@ -25,6 +25,22 @@
   command: /usr/bin/apt-mark hold docker-ce
   when: docker_installed.changed
 
+- name: Setup docker daemon
+  template:
+    src: daemon.json
+    dest: /etc/docker/daemon.json
+    owner: root
+    group: root
+    mode: 0644
+  register: docker_setup
+
+- name: Restart docker daemon
+  systemd:
+    name: docker
+    daemon-reload: yes
+    state: restarted
+  when: docker_setup.changed
+
 - name: Pass bridged IPv4 traffic to iptables' chains
   sysctl:
     name: net.bridge.bridge-nf-call-iptables
