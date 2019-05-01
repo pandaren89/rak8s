@@ -1,18 +1,34 @@
-[lb]
+[all]
 node1    ansible_host=10.0.0.100 
-
-[bastion]
 node2    ansible_host=10.0.0.200 
 
-[master]
 node3    ansible_host=10.0.0.101 
 node4    ansible_host=10.0.0.102 
 node5    ansible_host=10.0.0.103 
 
-[workers]
 node6    ansible_host=10.0.0.111 
 node7    ansible_host=10.0.0.112 
 node8    ansible_host=10.0.0.113 
+
+
+[lb]
+node1
+
+[bastion]
+node2
+
+[master]
+node3
+node4
+node5
+
+[workers]
+node6
+node7
+node8
+
+[dashboard]
+node3
 
 [k8s:children]
 master

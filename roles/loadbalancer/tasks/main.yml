@@ -1,0 +1,27 @@
+---
+# task file for kube-apiserver load balancer
+- name: Install Haproxy
+  shell: apt-get install -y haproxy
+  args:
+    warn: no
+
+- name: Enable Haproxy service
+  systemd:
+    name: haproxy
+    enabled: yes
+
+- name:  Copy haproxy config file
+  template:
+    src: haproxy.cfg.j2
+    dest: /etc/haproxy/haproxy.cfg
+    owner: root
+    group: root
+    mode: 0644
+  register: haproxy_cfg
+
+- name: Restart haproxy daemon
+  systemd:
+    name: haproxy
+    daemon-reload: yes
+    state: restarted
+  when: haproxy_cfg.changed

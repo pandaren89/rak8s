@@ -1,10 +1,26 @@
 ---
 # tasks file for dashboard
+- name:  Copy dashboard config file
+  copy:
+    src: kubernetes-dashboard-arm.yaml
+    dest: /tmp/rak8s/kubernetes-dashboard-arm.yaml
+    owner: root
+    group: root
+    mode: 0755
+
+- name:  Copy dashboard access config file
+  copy:
+    src: dashboard-admin.yaml
+    dest: /tmp/rak8s/dashboard-admin.yaml
+    owner: root
+    group: root
+    mode: 0755
+
 - name: Install k8s Dashboard
-  shell: kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/master/aio/deploy/recommended/kubernetes-dashboard-arm.yaml
+  shell: kubectl apply -f /tmp/rak8s/kubernetes-dashboard-arm.yaml
 
 - name: Configure Dashboard Access
-  shell: kubectl apply -f https://raw.githubusercontent.com/rak8s/rak8s/master/roles/dashboard/files/dashboard-admin.yaml
+  shell: kubectl apply -f /tmp/rak8s/dashboard-admin.yaml
 
 - name: Force Rebuild Dashboard Pods
   shell: kubectl -n kube-system delete $(kubectl -n kube-system get pod -o name | grep dashboard)

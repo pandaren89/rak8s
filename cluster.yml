@@ -1,6 +1,10 @@
 - hosts: all
   roles:
     - common
+
+- hosts: lb
+  roles:
+    - loadbalancer
     
 - hosts: k8s
   roles:
@@ -9,6 +13,9 @@
 - hosts: master
   roles:
     - master
+
+- hosts: dashboard
+  roles:
     - dashboard
 
 - hosts: workers
